@@ -1,0 +1,10 @@
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+
+# Scraped data & scraper scripts
+alignui/alignui-docs/
+alignui-docs/
+crawl_alignui.mjs
+alignui/crawl_alignui.mjs
