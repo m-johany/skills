@@ -197,136 +197,139 @@ async function main() {
   const pw = await loadPlaywright();
   const { server, url } = await serve(file);
   const origin = new URL(url).origin;
-  const browser = await pw.chromium.launch();
-  const results = [];
-  const shots = [];
-  const record = (name, problems) => results.push({ name, problems });
-  const html = readFileSync(file, "utf8");
-  const hasDark = /prefers-color-scheme:\s*dark/.test(html);
-  const hasChat = /data-demo\b/.test(html);
+  let browser;
+  try {
+    browser = await pw.chromium.launch();
+    const results = [];
+    const shots = [];
+    const record = (name, problems) => results.push({ name, problems });
+    const html = readFileSync(file, "utf8");
+    const hasDark = /prefers-color-scheme:\s*dark/.test(html);
+    const hasChat = /data-demo\b/.test(html);
 
-  async function open(name, options) {
-    const context = await browser.newContext({ viewport: { width: options.width, height: options.height || 900 }, ...options.context });
-    const page = await context.newPage();
-    const problems = [];
-    page.on("console", (m) => {
-      if (m.type() === "error") problems.push(`console error: ${m.text()}`);
-    });
-    page.on("pageerror", (e) => problems.push(`page error: ${e.message}`));
-    page.on("request", (r) => {
-      const u = r.url();
-      if (u.startsWith("data:") || u.startsWith("blob:")) return;
-      if (!u.startsWith(origin)) problems.push(`third-party request: ${u}`);
-      else if (u.split("#")[0] !== url) problems.push(`extra request (the page must be one self-contained file): ${u}`);
-    });
-    await page.goto(url, { waitUntil: "load" });
-    return { context, page, problems };
-  }
-
-  async function overflow(page) {
-    return page.evaluate(() => {
-      const d = document.documentElement;
-      return d.scrollWidth > d.clientWidth ? `page scrolls sideways: scrollWidth ${d.scrollWidth}px > viewport ${d.clientWidth}px` : null;
-    });
-  }
-
-  // Full-page screenshots at desktop and phone widths.
-  for (const [name, width, height] of [["desktop-1440", 1440, 900], ["mobile-390", 390, 844]]) {
-    const { context, page, problems } = await open(name, { width, height });
-    await settle(page);
-    const o = await overflow(page);
-    if (o) problems.push(o);
-    problems.push(...(await page.evaluate(domChecks)));
-    const path = join(outDir, `${name}.png`);
-    await page.screenshot({ path, fullPage: true });
-    shots.push(path);
-    if (name === "desktop-1440") {
-      await page.keyboard.press("Tab");
-      const focus = await page.evaluate(() => {
-        const el = document.activeElement;
-        const cs = getComputedStyle(el);
-        return { tag: el.tagName, style: cs.outlineStyle, width: parseFloat(cs.outlineWidth) };
+    async function open(name, options) {
+      const context = await browser.newContext({ viewport: { width: options.width, height: options.height || 900 }, ...options.context });
+      const page = await context.newPage();
+      const problems = [];
+      page.on("console", (m) => {
+        if (m.type() === "error") problems.push(`console error: ${m.text()}`);
       });
-      if (focus.tag === "BODY" || focus.style === "none" || focus.width < 2) problems.push(`keyboard focus is not visible (first Tab lands on ${focus.tag}, outline ${focus.style} ${focus.width}px)`);
+      page.on("pageerror", (e) => problems.push(`page error: ${e.message}`));
+      page.on("request", (r) => {
+        const u = r.url();
+        if (u.startsWith("data:") || u.startsWith("blob:")) return;
+        if (!u.startsWith(origin)) problems.push(`third-party request: ${u}`);
+        else if (u.split("#")[0] !== url) problems.push(`extra request (the page must be one self-contained file): ${u}`);
+      });
+      await page.goto(url, { waitUntil: "load" });
+      return { context, page, problems };
     }
-    if (name === "desktop-1440" && hasChat) {
-      const toggle = page.locator("[data-demo-toggle]").first();
-      if (!(await toggle.isVisible())) problems.push("chat demo: the Play button is not visible with JavaScript on");
-      else {
-        await toggle.scrollIntoViewIfNeeded();
-        await toggle.click();
-        const done = await page
-          .waitForFunction(() => [...document.querySelectorAll("[data-demo] [data-seq]")].every((el) => el.classList.contains("is-shown")), null, { timeout: 60000 })
-          .then(() => true, () => false);
-        if (!done) problems.push("chat demo: Play did not finish showing every message");
-        const label = (await toggle.textContent()).trim();
-        const replay = await toggle.getAttribute("data-replay");
-        if (label !== replay) problems.push(`chat demo: after Play the button reads "${label}", expected "${replay}"`);
-      }
-    }
-    record(`${name}: screenshot, overflow, DOM, ${name === "desktop-1440" ? "focus, chat demo" : "images"}`, problems);
-    await context.close();
-  }
 
-  // No horizontal page scroll across the width range.
-  {
-    const problems = [];
-    const { context, page, problems: p } = await open("widths", { width: 360, height: 800 });
-    for (const w of [360, 390, 768, 1024, 1280, 1440, 1920]) {
-      await page.setViewportSize({ width: w, height: 800 });
-      await page.waitForTimeout(120);
+    async function overflow(page) {
+      return page.evaluate(() => {
+        const d = document.documentElement;
+        return d.scrollWidth > d.clientWidth ? `page scrolls sideways: scrollWidth ${d.scrollWidth}px > viewport ${d.clientWidth}px` : null;
+      });
+    }
+
+    // Full-page screenshots at desktop and phone widths.
+    for (const [name, width, height] of [["desktop-1440", 1440, 900], ["mobile-390", 390, 844]]) {
+      const { context, page, problems } = await open(name, { width, height });
+      await settle(page);
       const o = await overflow(page);
-      if (o) problems.push(`${w}px: ${o}`);
+      if (o) problems.push(o);
+      problems.push(...(await page.evaluate(domChecks)));
+      const path = join(outDir, `${name}.png`);
+      await page.screenshot({ path, fullPage: true });
+      shots.push(path);
+      if (name === "desktop-1440") {
+        await page.keyboard.press("Tab");
+        const focus = await page.evaluate(() => {
+          const el = document.activeElement;
+          const cs = getComputedStyle(el);
+          return { tag: el.tagName, style: cs.outlineStyle, width: parseFloat(cs.outlineWidth) };
+        });
+        if (focus.tag === "BODY" || focus.style === "none" || focus.width < 2) problems.push(`keyboard focus is not visible (first Tab lands on ${focus.tag}, outline ${focus.style} ${focus.width}px)`);
+      }
+      if (name === "desktop-1440" && hasChat) {
+        const toggle = page.locator("[data-demo-toggle]").first();
+        if (!(await toggle.isVisible())) problems.push("chat demo: the Play button is not visible with JavaScript on");
+        else {
+          await toggle.scrollIntoViewIfNeeded();
+          await toggle.click();
+          const done = await page
+            .waitForFunction(() => [...document.querySelectorAll("[data-demo] [data-seq]")].every((el) => el.classList.contains("is-shown")), null, { timeout: 60000 })
+            .then(() => true, () => false);
+          if (!done) problems.push("chat demo: Play did not finish showing every message");
+          const label = (await toggle.textContent()).trim();
+          const replay = await toggle.getAttribute("data-replay");
+          if (label !== replay) problems.push(`chat demo: after Play the button reads "${label}", expected "${replay}"`);
+        }
+      }
+      record(`${name}: screenshot, overflow, DOM, ${name === "desktop-1440" ? "focus, chat demo" : "images"}`, problems);
+      await context.close();
     }
-    record("widths 360–1920: no horizontal page scroll", [...p, ...problems]);
-    await context.close();
-  }
 
-  // Reduced motion: everything visible without scrolling, no Play button, text contrast.
-  const schemes = hasDark ? ["light", "dark"] : [null];
-  for (const scheme of schemes) {
-    const name = `reduced-motion-1440${scheme === "dark" ? "-dark" : ""}`;
-    const { context, page, problems } = await open(name, { width: 1440, context: { reducedMotion: "reduce", ...(scheme ? { colorScheme: scheme } : {}) } });
-    const hidden = await page.evaluate(() => [...document.querySelectorAll(".reveal, [data-seq]")].filter((el) => Number(getComputedStyle(el).opacity) < 1).length);
-    if (hidden) problems.push(`${hidden} element(s) still faded out with reduced motion`);
-    const play = await page.locator("[data-demo-toggle]").evaluateAll((els) => els.some((el) => !el.hidden));
-    if (play) problems.push("the chat Play button shows with reduced motion");
-    const contrast = await page.evaluate(contrastFailures);
-    problems.push(...contrast.map((c) => `contrast: ${c}`));
-    const path = join(outDir, `${name}.png`);
-    await page.screenshot({ path, fullPage: true });
-    shots.push(path);
-    record(`${name}: all content visible, no Play button, text contrast (WCAG AA)`, problems);
-    await context.close();
-  }
+    // No horizontal page scroll across the width range.
+    {
+      const problems = [];
+      const { context, page, problems: p } = await open("widths", { width: 360, height: 800 });
+      for (const w of [360, 390, 768, 1024, 1280, 1440, 1920]) {
+        await page.setViewportSize({ width: w, height: 800 });
+        await page.waitForTimeout(120);
+        const o = await overflow(page);
+        if (o) problems.push(`${w}px: ${o}`);
+      }
+      record("widths 360–1920: no horizontal page scroll", [...p, ...problems]);
+      await context.close();
+    }
 
-  // JavaScript disabled: every section readable.
-  {
-    const { context, page, problems } = await open("no-js-1440", { width: 1440, context: { javaScriptEnabled: false } });
-    const hidden = await page.evaluate(() => [...document.querySelectorAll(".reveal, [data-seq], .statement, .msg")].filter((el) => Number(getComputedStyle(el).opacity) < 1 || getComputedStyle(el).visibility === "hidden").length);
-    if (hidden) problems.push(`${hidden} element(s) hidden without JavaScript`);
-    const path = join(outDir, "no-js-1440.png");
-    await page.screenshot({ path, fullPage: true });
-    shots.push(path);
-    record("no-js-1440: content readable with JavaScript disabled", problems);
-    await context.close();
-  }
+    // Reduced motion: everything visible without scrolling, no Play button, text contrast.
+    const schemes = hasDark ? ["light", "dark"] : [null];
+    for (const scheme of schemes) {
+      const name = `reduced-motion-1440${scheme === "dark" ? "-dark" : ""}`;
+      const { context, page, problems } = await open(name, { width: 1440, context: { reducedMotion: "reduce", ...(scheme ? { colorScheme: scheme } : {}) } });
+      const hidden = await page.evaluate(() => [...document.querySelectorAll(".reveal, [data-seq]")].filter((el) => Number(getComputedStyle(el).opacity) < 1).length);
+      if (hidden) problems.push(`${hidden} element(s) still faded out with reduced motion`);
+      const play = await page.locator("[data-demo-toggle]").evaluateAll((els) => els.some((el) => !el.hidden));
+      if (play) problems.push("the chat Play button shows with reduced motion");
+      const contrast = await page.evaluate(contrastFailures);
+      problems.push(...contrast.map((c) => `contrast: ${c}`));
+      const path = join(outDir, `${name}.png`);
+      await page.screenshot({ path, fullPage: true });
+      shots.push(path);
+      record(`${name}: all content visible, no Play button, text contrast (WCAG AA)`, problems);
+      await context.close();
+    }
 
-  await browser.close();
-  server.close();
+    // JavaScript disabled: every section readable.
+    {
+      const { context, page, problems } = await open("no-js-1440", { width: 1440, context: { javaScriptEnabled: false } });
+      const hidden = await page.evaluate(() => [...document.querySelectorAll(".reveal, [data-seq], .statement, .msg")].filter((el) => Number(getComputedStyle(el).opacity) < 1 || getComputedStyle(el).visibility === "hidden").length);
+      if (hidden) problems.push(`${hidden} element(s) hidden without JavaScript`);
+      const path = join(outDir, "no-js-1440.png");
+      await page.screenshot({ path, fullPage: true });
+      shots.push(path);
+      record("no-js-1440: content readable with JavaScript disabled", problems);
+      await context.close();
+    }
 
-  let failed = 0;
-  console.log(`casestudiesui check: ${file}\n`);
-  for (const r of results) {
-    const unique = [...new Set(r.problems)];
-    if (unique.length) failed++;
-    console.log(`${unique.length ? "✗" : "✓"} ${r.name}`);
-    for (const p of unique) console.log(`    - ${p}`);
+    let failed = 0;
+    console.log(`casestudiesui check: ${file}\n`);
+    for (const r of results) {
+      const unique = [...new Set(r.problems)];
+      if (unique.length) failed++;
+      console.log(`${unique.length ? "✗" : "✓"} ${r.name}`);
+      for (const p of unique) console.log(`    - ${p}`);
+    }
+    console.log(`\nScreenshots (open and look at each one):`);
+    for (const s of shots) console.log(`  ${s}`);
+    console.log(failed ? `\n${failed} check group(s) failed. Fix the content or template, rebuild, and run the check again.` : "\nAll checks passed. Now look at every screenshot.");
+    return failed ? 1 : 0;
+  } finally {
+    if (browser) await browser.close();
+    server.close();
   }
-  console.log(`\nScreenshots (open and look at each one):`);
-  for (const s of shots) console.log(`  ${s}`);
-  console.log(failed ? `\n${failed} check group(s) failed. Fix the content or template, rebuild, and run the check again.` : "\nAll checks passed. Now look at every screenshot.");
-  return failed ? 1 : 0;
 }
 
 main().then(

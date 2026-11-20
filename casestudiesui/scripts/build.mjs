@@ -29,32 +29,11 @@ const warn = (where, msg) => warnings.push(`${where}: ${msg}`);
 const META_KEYS = [
   "title", "category", "tagline", "summary", "highlights", "hero", "logo", "palette", "theme",
   "fonts", "font-body", "font-heading", "mention-build-tooling", "build-tooling-note",
-  "footer-note", "lang", "labels",
+  "footer-note", "lang",
 ];
 const HERO_KEYS = ["image", "alt", "caption", "tab"];
 const PALETTE_KEYS = ["background", "surface", "text", "accent", "muted", "strong"];
 const PALETTE_REQUIRED = ["background", "surface", "text", "accent"];
-
-const LABEL_DEFAULTS = {
-  skip: "Skip to content",
-  "case-study": "Case study",
-  sections: "Sections",
-  highlights: "Highlights",
-  problem: "The problem",
-  "primary-action": "See how it works",
-  "secondary-action": "What it can do",
-  capabilities: "Capabilities",
-  "chat-steps": "What happens in the conversation",
-  play: "Play",
-  replay: "Replay",
-  buttons: "Buttons",
-  step: "Step",
-  callouts: "What the numbered markers point to",
-  "scroll-hint": "Scroll sideways to see the whole screen.",
-  "scroll-region": "Screenshot, scroll sideways to see all of it",
-  summary: "Summary",
-  "back-to-top": "Back to top",
-};
 
 const SECTION_KINDS = ["problem", "chat", "flow", "screens", "capabilities", "closing"];
 const SHOWCASE_KINDS = ["chat", "flow", "screens"];
@@ -80,7 +59,6 @@ const SYSTEM_STACK = 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica N
 // ---------------------------------------------------------------- text helpers
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-const camel = (s) => s.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 const pad2 = (n) => String(n).padStart(2, "0");
 
 function esc(s) {
@@ -111,9 +89,10 @@ function plain(s) {
 
 // A chat message: blank-line paragraphs become <p>, single newlines become <br>.
 function messageHtml(s) {
-  const paras = s.split(/\n{2,}/);
-  if (paras.length === 1) return paras[0].split("\n").map(inline).join("<br>");
-  return paras.map((p) => `<p>${p.split("\n").map(inline).join("<br>")}</p>`).join("");
+  return s
+    .split(/\n{2,}/)
+    .map((p) => `<p>${p.split("\n").map(inline).join("<br>")}</p>`)
+    .join("");
 }
 
 function slug(s) {
@@ -475,14 +454,6 @@ function validateMeta(meta, baseDir) {
     page.toolingNote = "";
   }
 
-  page.labels = {};
-  const labels = meta.labels && typeof meta.labels === "object" && !Array.isArray(meta.labels) ? meta.labels : {};
-  if (meta.labels && meta.labels !== labels) err("labels", "must be a block of label: text lines");
-  for (const k of Object.keys(labels)) if (!(k in LABEL_DEFAULTS)) err(`labels.${k}`, `unknown label; labels: ${Object.keys(LABEL_DEFAULTS).join(", ")}`);
-  for (const [k, v] of Object.entries(LABEL_DEFAULTS)) {
-    const given = labels[k];
-    page.labels[camel(k)] = typeof given === "string" && given.trim() ? given.trim() : v;
-  }
   return page;
 }
 
@@ -646,7 +617,6 @@ function parsePin(value, where) {
 }
 
 function buildSections(raw, page, baseDir, icons) {
-  const L = page.labels;
   const usedIcons = new Set();
   const ids = new Set(["top", "main"]);
   const out = { problem: null, closing: null, sections: [], usedIcons };
@@ -676,7 +646,7 @@ function buildSections(raw, page, baseDir, icons) {
         err(where, "is empty; write the text or delete the section");
         continue;
       }
-      if (s.kind === "problem") out.problem = { label: s.title || L.problem, paras: paras.map((p) => ({ html: inline(p) })), text: paras.join(" ") };
+      if (s.kind === "problem") out.problem = { label: s.title || "The problem", paras: paras.map((p) => ({ html: inline(p) })), text: paras.join(" ") };
       else {
         if (s.title) warn(where, `"## Closing" takes no heading; "${s.title}" is not used`);
         out.closing = { html: inline(paras.join(" ")), text: paras.join(" ") };
@@ -688,7 +658,7 @@ function buildSections(raw, page, baseDir, icons) {
     const isShowcase = SHOWCASE_KINDS.includes(s.kind);
     if (isShowcase) showcaseN++;
     const id = uniqueId(fields.id || fields.nav || s.title, `section-${out.sections.length + 1}`);
-    const eyebrowText = fields.eyebrow || fields.nav || (s.kind === "capabilities" ? L.capabilities : "");
+    const eyebrowText = fields.eyebrow || fields.nav || (s.kind === "capabilities" ? "Capabilities" : "");
     const sec = {
       kind: s.kind,
       isChat: s.kind === "chat",
@@ -722,6 +692,7 @@ function buildSections(raw, page, baseDir, icons) {
         if (!p.fields.bot) err(p.where, 'needs "bot: <the bot\'s display name>"');
         if (paragraphs(p.rest).length) warn(p.where, "text under a pane is not used; put messages under a ### Step");
         const bot = p.fields.bot || "";
+        sec.texts.push({ where: p.where, text: `${p.title} ${bot}`, chat: true });
         return {
           paneId: `${id}-pane-${i + 1}`,
           label: p.title,
@@ -775,7 +746,7 @@ function buildSections(raw, page, baseDir, icons) {
         const text = paragraphs(st.rest).join(" ");
         sec.texts.push({ where: st.where, text: `${st.title} ${text} ${st.fields.label || ""}` });
         return {
-          label: [`${L.step} ${i + 1}`, st.fields.label].filter(Boolean).join(" · "),
+          label: [`Step ${i + 1}`, st.fields.label].filter(Boolean).join(" · "),
           titleHtml: inline(st.title),
           textHtml: text ? inline(text) : "",
           icon: iconName(st.fields.icon, st.where, icons, usedIcons),
@@ -798,7 +769,7 @@ function buildSections(raw, page, baseDir, icons) {
       });
       sec.hasCallouts = sec.callouts.length > 0;
       sec.hasPins = sec.callouts.some((c) => c.pin);
-      sec.calloutsLabel = sec.hasPins ? L.callouts : sec.title;
+      sec.calloutsLabel = sec.hasPins ? "What the numbered markers point to" : sec.title;
       sec.texts.push({ where: `${where} alt`, text: fields.alt || "", alt: true }, { where: `${where} caption`, text: sec.caption });
     }
 
@@ -815,7 +786,7 @@ function buildSections(raw, page, baseDir, icons) {
       sec.cols = n <= 4 ? n : n % 3 === 0 ? 3 : n % 4 === 0 ? 4 : n % 5 === 0 ? 5 : 3;
     }
 
-    sec.texts.push({ where, text: `${s.title} ${sec.intro} ${fields.eyebrow || ""}` });
+    sec.texts.push({ where, text: [s.title, sec.intro, fields.eyebrow, fields.nav, fields.note, fields.tab].filter(Boolean).join(" ") });
     out.sections.push(sec);
   }
   return out;
@@ -837,9 +808,10 @@ function lintHonesty(page, built) {
     ...page.highlights.map((h, i) => ({ where: `highlights[${i + 1}]`, text: h })),
     { where: "hero.alt", text: page.hero.alt || "", alt: true },
     { where: "hero.caption", text: page.hero.caption || "" },
+    { where: "hero.tab", text: page.hero.tab || "" },
     { where: "footer-note", text: page.footerNote },
   ];
-  if (built.problem) texts.push({ where: "## Problem", text: built.problem.text });
+  if (built.problem) texts.push({ where: "## Problem", text: `${built.problem.label} ${built.problem.text}` });
   if (built.closing) texts.push({ where: "## Closing", text: built.closing.text });
   for (const s of built.sections) texts.push(...s.texts);
   const all = page.toolingNote ? [...texts, { where: "build-tooling-note", text: page.toolingNote }] : texts;
@@ -1086,7 +1058,6 @@ function monogramSvg(letter, fill, on) {
 }
 
 function buildView(page, built, themes, icons) {
-  const L = page.labels;
   const main = themes[page.theme === "dark" ? "dark" : "light"];
   const letter = (page.title.trim().charAt(0) || "?").toUpperCase();
   const mark = page.logo
@@ -1095,8 +1066,8 @@ function buildView(page, built, themes, icons) {
   const firstShowcase = built.sections.find((s) => SHOWCASE_KINDS.includes(s.kind));
   const capsSection = built.sections.find((s) => s.kind === "capabilities");
   const actions = [];
-  if (firstShowcase) actions.push({ primary: true, href: `#${firstShowcase.id}`, label: L.primaryAction, down: true });
-  if (capsSection) actions.push({ primary: false, href: `#${capsSection.id}`, label: L.secondaryAction, down: false });
+  if (firstShowcase) actions.push({ primary: true, href: `#${firstShowcase.id}`, label: "See how it works", down: true });
+  if (capsSection) actions.push({ primary: false, href: `#${capsSection.id}`, label: "What it can do", down: false });
   const symbols = [...built.usedIcons].map((n) => icons[n]).join("");
   const themeColors =
     page.theme === "auto"
@@ -1108,7 +1079,7 @@ function buildView(page, built, themes, icons) {
   return {
     lang: page.lang,
     colorScheme: page.theme === "auto" ? "light dark" : page.theme,
-    pageTitle: `${plain(page.title)} · ${L.caseStudy}`,
+    pageTitle: `${plain(page.title)} · Case study`,
     title: plain(page.title),
     description: plain(page.summary),
     themeColors,
@@ -1119,11 +1090,10 @@ function buildView(page, built, themes, icons) {
     fontHeading: page.fontHeading,
     iconSprite: symbols ? `<svg class="sprite" aria-hidden="true" focusable="false"><defs>${symbols}</defs></svg>` : "",
     brandMark: mark,
-    labels: L,
     nav: built.sections.filter((s) => s.nav).map((s) => ({ href: `#${s.id}`, label: s.nav })),
     hasNav: built.sections.some((s) => s.nav),
     hero: {
-      eyebrow: [L.caseStudy, page.category].filter(Boolean).join(" · "),
+      eyebrow: ["Case study", page.category].filter(Boolean).join(" · "),
       taglineHtml: inline(page.tagline),
       summaryHtml: inline(page.summary),
       highlights: page.highlights.map((h) => ({ html: inline(h) })),

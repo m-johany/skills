@@ -300,17 +300,17 @@ h1 em, h2 em, .big em { font-style: normal; color: var(--accent-large); }
 </head>
 <body>
 {{{iconSprite}}}
-<a class="skip" href="#main">{{labels.skip}}</a>
+<a class="skip" href="#main">Skip to content</a>
 
 <header class="site-head" data-head>
   <div class="wrap head-row">
-    <a class="brand" href="#top" aria-label="{{title}}, {{labels.backToTop}}">
+    <a class="brand" href="#top" aria-label="{{title}}, Back to top">
       {{{brandMark}}}
       <span>{{title}}</span>
-      <small>{{labels.caseStudy}}</small>
+      <small>Case study</small>
     </a>
     {{#hasNav}}
-    <nav class="site-nav" aria-label="{{labels.sections}}">
+    <nav class="site-nav" aria-label="Sections">
       <ul>
         {{#nav}}
         <li><a href="{{href}}">{{label}}</a></li>
@@ -329,7 +329,7 @@ h1 em, h2 em, .big em { font-style: normal; color: var(--accent-large); }
         <h1 id="hero-title">{{{hero.taglineHtml}}}</h1>
         <p class="lede">{{{hero.summaryHtml}}}</p>
         {{#hero.hasHighlights}}
-        <ul class="ticks" aria-label="{{labels.highlights}}">
+        <ul class="ticks" aria-label="Highlights">
           {{#hero.highlights}}
           <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10"/><path d="m6 10.2 2.6 2.6L14.2 7" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>{{{html}}}</li>
           {{/hero.highlights}}
@@ -376,7 +376,7 @@ h1 em, h2 em, .big em { font-style: normal; color: var(--accent-large); }
         {{#introHtml}}<p class="reveal">{{{introHtml}}}</p>{{/introHtml}}
       </div>
       <div class="demo chat-layout" data-demo data-sequence="{{sequenceJson}}">
-        <ol class="demo-steps" aria-label="{{labels.chatSteps}}">
+        <ol class="demo-steps" aria-label="What happens in the conversation">
           {{#steps}}
           <li data-step="{{n}}"><span class="num" aria-hidden="true">{{nn}}</span><div><b>{{{titleHtml}}}</b>{{#textHtml}}<p>{{{textHtml}}}</p>{{/textHtml}}</div></li>
           {{/steps}}
@@ -384,7 +384,7 @@ h1 em, h2 em, .big em { font-style: normal; color: var(--accent-large); }
         <div class="demo-stage">
           <div class="demo-bar">
             <p class="demo-note">{{note}}</p>
-            <button type="button" class="btn btn-ghost demo-toggle" data-demo-toggle data-replay="{{labels.replay}}" hidden>{{labels.play}}</button>
+            <button type="button" class="btn btn-ghost demo-toggle" data-demo-toggle data-replay="Replay" hidden>Play</button>
           </div>
           <div class="panes{{#multiPane}} panes-2{{/multiPane}}">
             {{#panes}}
@@ -396,7 +396,7 @@ h1 em, h2 em, .big em { font-style: normal; color: var(--accent-large); }
                   {{#messages}}
                   {{#isUser}}<li class="msg msg-user" data-seq="{{seq}}"><span class="sr-only">{{speaker}}: </span>{{{html}}}</li>{{/isUser}}
                   {{#isBot}}<li class="msg msg-bot" data-seq="{{seq}}"><span class="sr-only">{{speaker}}: </span>{{{html}}}</li>{{/isBot}}
-                  {{#isButtons}}<li class="msg-actions" data-seq="{{seq}}"><span class="sr-only">{{labels.buttons}}: </span>{{#buttons}}<span class="btnlike">{{{html}}}</span>{{/buttons}}</li>{{/isButtons}}
+                  {{#isButtons}}<li class="msg-actions" data-seq="{{seq}}"><span class="sr-only">Buttons: </span>{{#buttons}}<span class="btnlike">{{{html}}}</span>{{/buttons}}</li>{{/isButtons}}
                   {{/messages}}
                 </ol>
               </div>
@@ -437,7 +437,7 @@ h1 em, h2 em, .big em { font-style: normal; color: var(--accent-large); }
       </div>
       <div class="shot-layout" data-hotspots>
         <figure class="reveal">
-          <div class="zoom"{{#hasPins}} data-zoom data-scroll-label="{{labels.scrollRegion}}"{{/hasPins}}>
+          <div class="zoom"{{#hasPins}} data-zoom data-scroll-label="Screenshot, scroll sideways to see all of it"{{/hasPins}}>
             <div class="frame">
               <div class="frame-bar" aria-hidden="true"><span class="dots"><i></i><i></i><i></i></span>{{#tab}}<span class="tab">{{tab}}</span>{{/tab}}</div>
               <div class="shot-img">
@@ -448,7 +448,7 @@ h1 em, h2 em, .big em { font-style: normal; color: var(--accent-large); }
               </div>
             </div>
           </div>
-          {{#hasPins}}<p class="zoom-hint" aria-hidden="true">{{labels.scrollHint}}</p>{{/hasPins}}
+          {{#hasPins}}<p class="zoom-hint" aria-hidden="true">Scroll sideways to see the whole screen.</p>{{/hasPins}}
           {{#caption}}<figcaption class="caption">{{caption}}</figcaption>{{/caption}}
         </figure>
         {{#hasCallouts}}
@@ -484,11 +484,11 @@ h1 em, h2 em, .big em { font-style: normal; color: var(--accent-large); }
   {{/sections}}
 
   {{#closing}}
-  <section class="closing" aria-label="{{labels.summary}}">
+  <section class="closing" aria-label="Summary">
     <div class="wrap">
       <p class="big reveal">{{{html}}}</p>
       <div class="hero-actions reveal">
-        <a class="btn btn-ghost" href="#top">{{labels.backToTop}}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16V4m0 0-5 5m5-5 5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <a class="btn btn-ghost" href="#top">Back to top<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16V4m0 0-5 5m5-5 5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>
     </div>
   </section>

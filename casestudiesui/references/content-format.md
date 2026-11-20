@@ -24,7 +24,6 @@ One Markdown file per case study: YAML frontmatter for the page settings and her
 | `build-tooling-note` | when tooling is true | The one sentence about how the app was built, worded and confirmed by the user. Shown in the footer. |
 | `footer-note` | yes | The footer line that labels the demo data, e.g. "Screens use demo data." |
 | `lang` | no | Page language tag, default `en`. |
-| `labels` | no | Interface text for pages in another language, below. |
 
 ### Palette
 
@@ -51,10 +50,6 @@ font-heading:                                  # optional; headings use the body
 ```
 
 Accepted files are `.woff2`, `.woff`, `.ttf` and `.otf`; paths take no spaces. Use files the client licenses for web embedding, preferring WOFF2 for size.
-
-### Labels
-
-The page's fixed interface text is English by default. Override any of these keys under `labels:` for another language, alongside `lang`: `skip`, `case-study`, `sections`, `highlights`, `problem`, `primary-action`, `secondary-action`, `capabilities`, `chat-steps`, `play`, `replay`, `buttons`, `step`, `callouts`, `scroll-hint`, `scroll-region`, `summary`, `back-to-top`. Their English defaults are `LABEL_DEFAULTS` in `scripts/build.mjs`.
 
 ## Body
 
