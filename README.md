@@ -11,6 +11,9 @@ Each skill gives your AI agents deep domain expertise, strict conventions, and a
 | Skill | Description | Invocation |
 | :--- | :--- | :--- |
 | [`alignui`](./alignui) | Build, compose, and style React components with the [AlignUI](https://alignui.com) design system, semantic tokens, and Tailwind CSS. | `/alignui` |
+| [`casestudiesui`](./casestudiesui) | Build a client app's case-study web page as one self-contained HTML file in the app's own palette, from a confirmed Markdown content file and screenshots. | `/casestudiesui` |
+
+`casestudiesui` installs like the commands below, with `casestudiesui` in place of `alignui`. Its scripts need Node.js 18+, and its browser checks need Playwright with Chromium (`npm i -g playwright && npx playwright install chromium`).
 
 ---
 
