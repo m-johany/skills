@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="{{lang}}" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="{{colorScheme}}">
+<title>{{pageTitle}}</title>
+<meta name="description" content="{{description}}">
+{{#themeColors}}
+<meta name="theme-color" content="{{color}}"{{#media}} media="{{media}}"{{/media}}>
+{{/themeColors}}
+<link rel="icon" href="{{{favicon}}}">
+<script>document.documentElement.className = "js";</script>
+<style>
+{{{fontFaces}}}
+{{{tokens}}}
+:root {
+  --font: {{{fontBody}}};
+  --font-heading: {{{fontHeading}}};
+  --fs-label: 13px;
+  --fs-small: 15px;
+  --fs-body: 17px;
+  --fs-lede: clamp(18px, 1.6vw, 21px);
+  --fs-h3: 21px;
+  --fs-h2: clamp(32px, 4.2vw, 54px);
+  --fs-h1: clamp(40px, 6.4vw, 76px);
+  --fs-statement: clamp(26px, 3.3vw, 44px);
+  --gutter: clamp(16px, 4vw, 48px);
+  --max: 1240px;
+  --r-s: 10px;
+  --r-m: 16px;
+  --r-l: 22px;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 400 var(--fs-body)/1.65 var(--font); -webkit-font-smoothing: antialiased;
+}
+img { display: block; max-width: 100%; height: auto; }
+h1, h2, h3, p, ol, ul, figure { margin: 0; }
+h1, h2, h3, .statement, .big { font-family: var(--font-heading); overflow-wrap: break-word; }
+a { color: inherit; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; }
+:focus-visible { outline: 3px solid var(--accent-large); outline-offset: 3px; border-radius: 6px; }
+::selection { background: var(--accent-soft); color: var(--text); }
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip {
+  position: absolute; left: 16px; top: -60px; z-index: 100;
+  background: var(--strong); color: var(--on-strong); padding: 10px 16px; border-radius: var(--r-s);
+  font-weight: 600; text-decoration: none;
+}
+.skip:focus { top: 12px; }
+
+.wrap { width: 100%; max-width: calc(var(--max) + 2 * var(--gutter)); margin: 0 auto; padding: 0 var(--gutter); }
+
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  color: var(--accent-text); font: 700 var(--fs-label)/1.4 var(--font);
+  letter-spacing: .12em; text-transform: uppercase;
+}
+.eyebrow::before { content: ""; width: 22px; height: 2px; background: currentColor; border-radius: 2px; flex: none; }
+h2 { font-size: var(--fs-h2); line-height: 1.06; letter-spacing: -.03em; font-weight: 700; margin: 16px 0 18px; text-wrap: balance; }
+h1 em, h2 em, .big em { font-style: normal; color: var(--accent-large); }
+.lede { font-size: var(--fs-lede); line-height: 1.6; color: var(--muted); max-width: 600px; text-wrap: pretty; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 22px;
+  border-radius: 999px; font: 600 16px/1 var(--font); text-decoration: none; cursor: pointer;
+  border: 1.5px solid transparent; transition: background-color .2s, border-color .2s;
+}
+.btn svg { width: 18px; height: 18px; flex: none; }
+.btn-primary { background: var(--fill); color: var(--on-fill); }
+.btn-primary:hover { background: var(--fill-hover); }
+.btn-ghost { background: transparent; color: var(--text); border-color: var(--line-strong); }
+.btn-ghost:hover { border-color: var(--text); background: var(--surface); }
+
+/* Header */
+.site-head { position: sticky; top: 0; z-index: 50; background: var(--bg); border-bottom: 1px solid transparent; transition: border-color .2s; }
+.site-head.is-scrolled { border-bottom-color: var(--line); }
+.head-row { display: flex; align-items: center; gap: 20px; height: 64px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 800; font-size: 19px; letter-spacing: -.02em; flex: none; color: var(--text); }
+.brand img, .brand .mark { width: 30px; height: 30px; flex: none; }
+.brand .mark { border-radius: 8px; background: var(--fill); color: var(--on-fill); display: grid; place-items: center; font-size: 16px; }
+.brand small {
+  font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; background: var(--surface);
+}
+.site-nav { margin-left: auto; min-width: 0; }
+.site-nav ul { display: flex; gap: 4px; list-style: none; padding: 0; margin: 0; }
+.site-nav a {
+  display: block; padding: 8px 14px; border-radius: 999px; font-size: var(--fs-small); font-weight: 600;
+  color: var(--muted); text-decoration: none; white-space: nowrap; transition: color .2s, background-color .2s;
+}
+.site-nav a:hover { color: var(--text); background: var(--tint); }
+.site-nav a[aria-current="true"] { color: var(--text); background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+
+/* Hero */
+.hero { padding: clamp(36px, 6vw, 80px) 0 clamp(40px, 5vw, 72px); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(40px, 6vw, 64px); align-items: center; }
+.hero h1 { font-size: var(--fs-h1); line-height: 1; letter-spacing: -.04em; font-weight: 800; margin: 20px 0 24px; text-wrap: balance; }
+.ticks { display: flex; flex-wrap: wrap; gap: 10px 22px; list-style: none; padding: 0; margin: 26px 0 0; }
+.ticks li { display: inline-flex; align-items: center; gap: 9px; font-weight: 600; font-size: var(--fs-small); }
+.ticks svg { width: 20px; height: 20px; flex: none; }
+.ticks circle { fill: var(--strong); }
+.ticks path { stroke: var(--on-strong); }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+@media (min-width: 980px) {
+  .hero-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+  .hero h1 { font-size: clamp(40px, 4.3vw, 62px); }
+}
+
+/* Framed screenshots: flat, with a plain window bar */
+.frame { position: relative; background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); }
+.frame-bar {
+  display: flex; align-items: center; gap: 12px; height: 34px; padding: 0 14px;
+  background: var(--frame-bar); border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); font-weight: 600;
+}
+.frame-bar .dots { display: inline-flex; gap: 6px; }
+.frame-bar .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--line-strong); display: block; }
+.frame-bar .tab { background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 2px 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.frame img { width: 100%; }
+.shot-img { position: relative; }
+.visual-note, .caption { margin-top: 14px; font-size: 14px; color: var(--muted); }
+
+/* Problem */
+.problem { padding: clamp(56px, 8vw, 112px) 0 clamp(64px, 10vw, 140px); border-top: 1px solid var(--line); }
+.statement { font-size: var(--fs-statement); line-height: 1.22; letter-spacing: -.02em; font-weight: 600; max-width: 980px; margin-top: 22px; text-wrap: pretty; }
+
+/* Sections */
+.section { padding: clamp(72px, 10vw, 140px) 0; }
+.tinted { background: var(--tint); }
+.section-head { max-width: 760px; }
+.section-head p:not(.eyebrow) { color: var(--muted); font-size: var(--fs-lede); text-wrap: pretty; }
+
+/* Chat demo: readable at rest; Play runs it as a sequence */
+.chat-layout { display: grid; gap: 40px; margin-top: 52px; }
+.chat-layout > * { min-width: 0; }
+.demo-steps { list-style: none; padding: 0; display: grid; gap: 6px; align-content: start; }
+.demo-steps li {
+  display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 14px; padding: 18px 18px 18px 14px;
+  border-radius: var(--r-m); border: 1px solid transparent; transition: background-color .3s, border-color .3s;
+}
+.demo-steps .num {
+  width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 15px;
+  border: 1.5px solid var(--line); background: var(--surface); color: var(--muted); transition: background-color .3s, color .3s, border-color .3s;
+}
+.demo-steps b { font-size: var(--fs-h3); letter-spacing: -.01em; display: block; line-height: 1.3; margin-top: 8px; }
+.demo-steps p { color: var(--muted); margin-top: 4px; font-size: var(--fs-small); }
+.demo-steps li.is-active { background: var(--surface); border-color: var(--line); }
+.demo-steps li.is-active .num, .demo-steps li.is-done .num { background: var(--fill); border-color: var(--fill); color: var(--on-fill); }
+.demo-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin-bottom: 20px; min-height: 42px; }
+.demo-note { font-size: 14px; color: var(--muted); }
+.demo-toggle { min-height: 42px; padding: 0 18px; font-size: 15px; }
+.demo-toggle[hidden] { display: none; }
+.panes { display: grid; gap: 16px; max-width: 560px; }
+.pane { min-width: 0; display: flex; flex-direction: column; }
+.pane-label { font: 700 12px/1.4 var(--font); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px 4px; }
+.chat { background: var(--chat-bg); border-radius: 20px; overflow: hidden; border: 1px solid var(--line); display: flex; flex-direction: column; flex: 1; }
+.chat-head { display: flex; align-items: center; gap: 12px; background: var(--strong); color: var(--on-strong); padding: 14px 18px; }
+.chat-head b { display: block; font-size: 16px; line-height: 1.2; }
+.avatar {
+  width: 38px; height: 38px; border-radius: 50%; background: var(--fill); color: var(--on-fill); flex: none;
+  display: grid; place-items: center; font-weight: 800; font-size: 16px;
+}
+.chat-log { list-style: none; padding: 18px 14px; margin: 0; display: grid; gap: 12px; align-content: start; flex: 1; font-size: var(--fs-small); line-height: 1.5; }
+.msg { position: relative; max-width: 88%; padding: 11px 15px; border-radius: 16px; overflow-wrap: anywhere; }
+.msg p + p { margin-top: 10px; }
+.msg-user { justify-self: end; background: var(--accent-soft); border-bottom-right-radius: 5px; }
+.msg-bot { justify-self: start; background: var(--surface); border-bottom-left-radius: 5px; border: 1px solid var(--line); }
+.msg-actions { justify-self: start; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; width: min(88%, 340px); }
+.msg-actions .btnlike { display: block; text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 9px 10px; font-weight: 700; }
+.typing {
+  position: absolute; left: 0; top: 0; display: inline-flex; gap: 4px; align-items: center;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px; border-bottom-left-radius: 5px; padding: 14px 16px; opacity: 0; pointer-events: none;
+}
+.typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); display: block; opacity: .6; }
+@media (prefers-reduced-motion: no-preference) {
+  .js .demo.is-armed [data-seq] { opacity: 0; transform: translateY(8px); }
+  .js .demo.is-armed [data-seq].is-shown { opacity: 1; transform: none; transition: opacity .35s var(--ease), transform .35s var(--ease); }
+  .js .demo [data-seq].is-typing { opacity: 1; transform: none; background: transparent; border-color: transparent; }
+  .js .demo [data-seq].is-typing .typing { opacity: 1; }
+  .js .demo [data-seq].is-typing > :not(.typing) { visibility: hidden; }
+}
+@media (min-width: 760px) {
+  .panes-2 { grid-template-columns: 1fr 1fr; max-width: none; }
+}
+@media (min-width: 1080px) {
+  .chat-layout { grid-template-columns: 340px minmax(0, 1fr); gap: 56px; }
+  .demo-steps { position: sticky; top: 100px; }
+}
+
+/* Step flow */
+.flow { position: relative; list-style: none; padding: 0; margin-top: 48px; display: grid; gap: 18px; }
+.flow::before { content: ""; position: absolute; left: 27px; top: 28px; bottom: 28px; width: 2px; border-radius: 2px; background: var(--line); }
+.flow li { position: relative; display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 20px; align-items: start; }
+.flow .dot { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; position: relative; z-index: 1; background: var(--strong); color: var(--on-strong); }
+.flow .dot svg { width: 24px; height: 24px; }
+.flow .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-l); padding: 24px 26px; }
+.flow .step-n { font: 700 var(--fs-label)/1.4 var(--font); letter-spacing: .12em; text-transform: uppercase; color: var(--accent-text); }
+.flow h3 { font-size: 24px; letter-spacing: -.02em; line-height: 1.25; margin: 6px 0 8px; }
+.flow p:not(.step-n) { color: var(--muted); }
+@media (min-width: 900px) {
+  .flow-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 72px; align-items: start; }
+  .flow-grid .flow { margin-top: 0; }
+  .flow-grid .section-head { position: sticky; top: 110px; }
+}
+
+/* Annotated screenshot */
+.shot-layout { margin-top: 52px; display: grid; gap: 32px; }
+.shot-layout > * { min-width: 0; }
+.pins { position: absolute; inset: 0; pointer-events: none; }
+.pin {
+  position: absolute; transform: translate(-50%, -50%); width: 30px; height: 30px; border-radius: 50%;
+  background: var(--strong); color: var(--on-strong); font-size: 14px; font-weight: 800; display: grid; place-items: center;
+  box-shadow: 0 0 0 3px var(--surface); transition: background-color .2s, color .2s;
+}
+.pin.is-hot { background: var(--fill); color: var(--on-fill); }
+.callouts { list-style: none; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); }
+.callouts li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 14px; padding: 16px 18px; border-radius: var(--r-m); background: var(--surface); border: 1px solid var(--line); transition: border-color .2s; }
+.callouts li:hover, .callouts li.is-hot { border-color: var(--accent-large); }
+.callouts .n { width: 30px; height: 30px; border-radius: 50%; background: var(--strong); color: var(--on-strong); font-weight: 800; font-size: 14px; display: grid; place-items: center; }
+.callouts b { display: block; font-size: 17px; line-height: 1.35; }
+.callouts p { color: var(--muted); font-size: var(--fs-small); margin-top: 2px; }
+.zoom-hint { display: none; font-size: 13px; color: var(--muted); margin-top: 10px; }
+@media (max-width: 699px) {
+  .zoom[data-zoom] { overflow-x: auto; overscroll-behavior-x: contain; border-radius: 12px; }
+  .zoom[data-zoom] > .frame { width: 720px; max-width: none; }
+  .zoom-hint { display: block; }
+}
+@media (max-width: 600px) {
+  .pin { width: 26px; height: 26px; font-size: 12px; }
+  .frame-bar { height: 28px; }
+}
+
+/* Capabilities */
+.caps { list-style: none; padding: 0; margin-top: 52px; display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+.cap { padding: 26px 24px 24px; border-radius: var(--r-l); background: var(--surface); border: 1px solid var(--line); transition: border-color .2s; }
+.cap:hover { border-color: var(--accent-large); }
+.cap-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.cap-icon { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); }
+.cap-icon svg { width: 24px; height: 24px; }
+.cap-n { font-size: var(--fs-label); font-weight: 700; color: var(--muted); letter-spacing: .1em; }
+.cap h3 { font-size: var(--fs-h3); letter-spacing: -.01em; line-height: 1.3; margin-bottom: 6px; }
+.cap p { color: var(--muted); font-size: var(--fs-small); line-height: 1.6; }
+@media (min-width: 640px) { .caps:not(.cols-1) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) {
+  .caps.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .caps.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .caps.cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .caps.cols-5 .cap { padding: 24px 20px 22px; }
+  .caps.cols-5 .cap h3 { font-size: 19px; }
+}
+@media (max-width: 639px) {
+  .cap { display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 16px; padding: 18px 18px 18px 16px; }
+  .cap-top { grid-column: 1; grid-row: 1 / span 2; align-self: start; margin: 2px 0 0; }
+  .cap-n { display: none; }
+  .cap-icon { width: 44px; height: 44px; border-radius: 12px; }
+  .cap > h3, .cap > p { grid-column: 2; }
+  .cap h3 { font-size: 18px; margin-bottom: 2px; }
+}
+
+/* Closing and footer */
+.closing { padding: clamp(80px, 11vw, 150px) 0 clamp(56px, 7vw, 90px); text-align: center; }
+.big { font-size: clamp(32px, 5vw, 68px); line-height: 1.06; letter-spacing: -.035em; font-weight: 800; max-width: 1000px; margin: 0 auto; text-wrap: balance; }
+.closing .hero-actions { justify-content: center; }
+.site-foot { border-top: 1px solid var(--line); padding: 28px 0 44px; }
+.foot-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 24px; color: var(--muted); font-size: 14px; }
+.foot-row .brand { font-size: 17px; }
+.foot-row .brand img, .foot-row .brand .mark { width: 24px; height: 24px; font-size: 13px; border-radius: 6px; }
+.foot-notes { display: grid; gap: 4px; text-align: right; }
+
+/* Fade-in on scroll: the only scroll motion */
+@media (prefers-reduced-motion: no-preference) {
+  .js .reveal { opacity: 0; transform: translateY(12px); transition: opacity .6s ease, transform .6s ease; }
+  .js .reveal.in { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+@media (max-width: 720px) {
+  .brand small { display: none; }
+  .head-row { gap: 10px; }
+  .site-nav { overflow-x: auto; scrollbar-width: none; }
+  .site-nav::-webkit-scrollbar { display: none; }
+  .site-nav a { padding: 8px 10px; font-size: 14px; }
+  .foot-notes { text-align: left; }
+}
+</style>
+</head>
+<body>
+{{{iconSprite}}}
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-head" data-head>
+  <div class="wrap head-row">
+    <a class="brand" href="#top" aria-label="{{title}}, Back to top">
+      {{{brandMark}}}
+      <span>{{title}}</span>
+      <small>Case study</small>
+    </a>
+    {{#hasNav}}
+    <nav class="site-nav" aria-label="Sections">
+      <ul>
+        {{#nav}}
+        <li><a href="{{href}}">{{label}}</a></li>
+        {{/nav}}
+      </ul>
+    </nav>
+    {{/hasNav}}
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="wrap hero-grid">
+      <div class="intro">
+        <p class="eyebrow">{{hero.eyebrow}}</p>
+        <h1 id="hero-title">{{{hero.taglineHtml}}}</h1>
+        <p class="lede">{{{hero.summaryHtml}}}</p>
+        {{#hero.hasHighlights}}
+        <ul class="ticks" aria-label="Highlights">
+          {{#hero.highlights}}
+          <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10"/><path d="m6 10.2 2.6 2.6L14.2 7" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>{{{html}}}</li>
+          {{/hero.highlights}}
+        </ul>
+        {{/hero.hasHighlights}}
+        {{#hero.hasActions}}
+        <div class="hero-actions">
+          {{#hero.actions}}
+          <a class="btn {{#primary}}btn-primary{{/primary}}{{^primary}}btn-ghost{{/primary}}" href="{{href}}">{{label}}{{#down}}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12m0 0-5-5m5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>{{/down}}{{^down}}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>{{/down}}</a>
+          {{/hero.actions}}
+        </div>
+        {{/hero.hasActions}}
+      </div>
+      <figure class="hero-visual">
+        <div class="frame">
+          <div class="frame-bar" aria-hidden="true"><span class="dots"><i></i><i></i><i></i></span>{{#hero.tab}}<span class="tab">{{hero.tab}}</span>{{/hero.tab}}</div>
+          <img src="{{{hero.image.src}}}" width="{{hero.image.w}}" height="{{hero.image.h}}" fetchpriority="high" alt="{{hero.alt}}">
+        </div>
+        {{#hero.caption}}
+        <figcaption class="visual-note">{{hero.caption}}</figcaption>
+        {{/hero.caption}}
+      </figure>
+    </div>
+  </section>
+
+  {{#problem}}
+  <section class="problem" aria-labelledby="problem-title">
+    <div class="wrap">
+      <h2 class="eyebrow reveal" id="problem-title">{{label}}</h2>
+      {{#paras}}
+      <p class="statement">{{{html}}}</p>
+      {{/paras}}
+    </div>
+  </section>
+  {{/problem}}
+
+  {{#sections}}
+  {{#isChat}}
+  <section class="section{{#tinted}} tinted{{/tinted}}" id="{{id}}" aria-labelledby="{{id}}-title">
+    <div class="wrap">
+      <div class="section-head">
+        {{#eyebrow}}<p class="eyebrow reveal">{{eyebrow}}</p>{{/eyebrow}}
+        <h2 class="reveal" id="{{id}}-title">{{{headingHtml}}}</h2>
+        {{#introHtml}}<p class="reveal">{{{introHtml}}}</p>{{/introHtml}}
+      </div>
+      <div class="demo chat-layout" data-demo data-sequence="{{sequenceJson}}">
+        <ol class="demo-steps" aria-label="What happens in the conversation">
+          {{#steps}}
+          <li data-step="{{n}}"><span class="num" aria-hidden="true">{{nn}}</span><div><b>{{{titleHtml}}}</b>{{#textHtml}}<p>{{{textHtml}}}</p>{{/textHtml}}</div></li>
+          {{/steps}}
+        </ol>
+        <div class="demo-stage">
+          <div class="demo-bar">
+            <p class="demo-note">{{note}}</p>
+            <button type="button" class="btn btn-ghost demo-toggle" data-demo-toggle data-replay="Replay" hidden>Play</button>
+          </div>
+          <div class="panes{{#multiPane}} panes-2{{/multiPane}}">
+            {{#panes}}
+            <section class="pane" aria-labelledby="{{paneId}}">
+              <h3 class="pane-label" id="{{paneId}}">{{label}}</h3>
+              <div class="chat">
+                <div class="chat-head"><span class="avatar" aria-hidden="true">{{avatar}}</span><b>{{bot}}</b></div>
+                <ol class="chat-log" aria-label="{{logLabel}}">
+                  {{#messages}}
+                  {{#isUser}}<li class="msg msg-user" data-seq="{{seq}}"><span class="sr-only">{{speaker}}: </span>{{{html}}}</li>{{/isUser}}
+                  {{#isBot}}<li class="msg msg-bot" data-seq="{{seq}}"><span class="sr-only">{{speaker}}: </span>{{{html}}}</li>{{/isBot}}
+                  {{#isButtons}}<li class="msg-actions" data-seq="{{seq}}"><span class="sr-only">Buttons: </span>{{#buttons}}<span class="btnlike">{{{html}}}</span>{{/buttons}}</li>{{/isButtons}}
+                  {{/messages}}
+                </ol>
+              </div>
+            </section>
+            {{/panes}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  {{/isChat}}
+  {{#isFlow}}
+  <section class="section{{#tinted}} tinted{{/tinted}}" id="{{id}}" aria-labelledby="{{id}}-title">
+    <div class="wrap flow-grid">
+      <div class="section-head">
+        {{#eyebrow}}<p class="eyebrow reveal">{{eyebrow}}</p>{{/eyebrow}}
+        <h2 class="reveal" id="{{id}}-title">{{{headingHtml}}}</h2>
+        {{#introHtml}}<p class="reveal">{{{introHtml}}}</p>{{/introHtml}}
+      </div>
+      <ol class="flow">
+        {{#steps}}
+        <li class="reveal">
+          <span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-{{icon}}"/></svg></span>
+          <div class="card"><p class="step-n">{{label}}</p><h3>{{{titleHtml}}}</h3>{{#textHtml}}<p>{{{textHtml}}}</p>{{/textHtml}}</div>
+        </li>
+        {{/steps}}
+      </ol>
+    </div>
+  </section>
+  {{/isFlow}}
+  {{#isScreens}}
+  <section class="section{{#tinted}} tinted{{/tinted}}" id="{{id}}" aria-labelledby="{{id}}-title">
+    <div class="wrap">
+      <div class="section-head">
+        {{#eyebrow}}<p class="eyebrow reveal">{{eyebrow}}</p>{{/eyebrow}}
+        <h2 class="reveal" id="{{id}}-title">{{{headingHtml}}}</h2>
+        {{#introHtml}}<p class="reveal">{{{introHtml}}}</p>{{/introHtml}}
+      </div>
+      <div class="shot-layout" data-hotspots>
+        <figure class="reveal">
+          <div class="zoom"{{#hasPins}} data-zoom data-scroll-label="Screenshot, scroll sideways to see all of it"{{/hasPins}}>
+            <div class="frame">
+              <div class="frame-bar" aria-hidden="true"><span class="dots"><i></i><i></i><i></i></span>{{#tab}}<span class="tab">{{tab}}</span>{{/tab}}</div>
+              <div class="shot-img">
+                <img src="{{{image.src}}}" width="{{image.w}}" height="{{image.h}}" loading="lazy" decoding="async" alt="{{image.alt}}">
+                {{#hasPins}}
+                <div class="pins" aria-hidden="true">{{#callouts}}{{#pin}}<span class="pin" data-pin="{{n}}" style="left:{{x}}%;top:{{y}}%">{{n}}</span>{{/pin}}{{/callouts}}</div>
+                {{/hasPins}}
+              </div>
+            </div>
+          </div>
+          {{#hasPins}}<p class="zoom-hint" aria-hidden="true">Scroll sideways to see the whole screen.</p>{{/hasPins}}
+          {{#caption}}<figcaption class="caption">{{caption}}</figcaption>{{/caption}}
+        </figure>
+        {{#hasCallouts}}
+        <ol class="callouts" aria-label="{{calloutsLabel}}">
+          {{#callouts}}
+          <li class="reveal" data-callout="{{n}}"><span class="n" aria-hidden="true">{{n}}</span><div><b>{{{titleHtml}}}</b>{{#textHtml}}<p>{{{textHtml}}}</p>{{/textHtml}}</div></li>
+          {{/callouts}}
+        </ol>
+        {{/hasCallouts}}
+      </div>
+    </div>
+  </section>
+  {{/isScreens}}
+  {{#isCapabilities}}
+  <section class="section{{#tinted}} tinted{{/tinted}}" id="{{id}}" aria-labelledby="{{id}}-title">
+    <div class="wrap">
+      <div class="section-head">
+        {{#eyebrow}}<p class="eyebrow reveal">{{eyebrow}}</p>{{/eyebrow}}
+        <h2 class="reveal" id="{{id}}-title">{{{headingHtml}}}</h2>
+        {{#introHtml}}<p class="reveal">{{{introHtml}}}</p>{{/introHtml}}
+      </div>
+      <ul class="caps cols-{{cols}}">
+        {{#items}}
+        <li class="cap reveal">
+          <div class="cap-top"><span class="cap-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-{{icon}}"/></svg></span><span class="cap-n" aria-hidden="true">{{nn}}</span></div>
+          <h3>{{{titleHtml}}}</h3><p>{{{textHtml}}}</p>
+        </li>
+        {{/items}}
+      </ul>
+    </div>
+  </section>
+  {{/isCapabilities}}
+  {{/sections}}
+
+  {{#closing}}
+  <section class="closing" aria-label="Summary">
+    <div class="wrap">
+      <p class="big reveal">{{{html}}}</p>
+      <div class="hero-actions reveal">
+        <a class="btn btn-ghost" href="#top">Back to top<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16V4m0 0-5 5m5-5 5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </div>
+  </section>
+  {{/closing}}
+</main>
+
+<footer class="site-foot">
+  <div class="wrap foot-row">
+    <span class="brand">{{{brandMark}}}<span>{{title}}</span></span>
+    <div class="foot-notes">
+      <p>{{footerNote}}</p>
+      {{#toolingNote}}<p>{{toolingNote}}</p>{{/toolingNote}}
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var hasIO = "IntersectionObserver" in window;
+  function $(sel, ctx) { return (ctx || document).querySelector(sel); }
+  function $$(sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); }
+
+  /* Fade-in on scroll */
+  var reveals = $$(".reveal");
+  if (reduce || !hasIO) {
+    reveals.forEach(function (el) { el.classList.add("in"); });
+  } else {
+    var revealIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("in"); revealIO.unobserve(e.target); }
+      });
+    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
+    reveals.forEach(function (el) { revealIO.observe(el); });
+  }
+
+  /* Header: a border once scrolled, and the current section marked in the nav */
+  var head = $("[data-head]");
+  var onScroll = function () { head.classList.toggle("is-scrolled", (window.scrollY || window.pageYOffset) > 8); };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+  var navLinks = $$(".site-nav a");
+  if (hasIO && navLinks.length) {
+    var sectionIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        navLinks.forEach(function (a) {
+          if (a.getAttribute("href") === "#" + e.target.id) a.setAttribute("aria-current", "true");
+          else a.removeAttribute("aria-current");
+        });
+      });
+    }, { rootMargin: "-45% 0px -50% 0px" });
+    $$("main > section[id]").forEach(function (sec) { sectionIO.observe(sec); });
+  }
+
+  /* Annotated screenshots: hovering a callout marks its pin */
+  $$("[data-hotspots]").forEach(function (hs) {
+    $$("[data-callout]", hs).forEach(function (li) {
+      var pin = $('[data-pin="' + li.getAttribute("data-callout") + '"]', hs);
+      li.addEventListener("pointerenter", function () { li.classList.add("is-hot"); if (pin) pin.classList.add("is-hot"); });
+      li.addEventListener("pointerleave", function () { li.classList.remove("is-hot"); if (pin) pin.classList.remove("is-hot"); });
+    });
+  });
+
+  /* A screenshot that scrolls sideways gets a name and a tab stop only while it scrolls */
+  var scrollers = $$("[data-scroll-label]");
+  var syncScrollers = function () {
+    scrollers.forEach(function (el) {
+      if (el.scrollWidth > el.clientWidth + 4) {
+        el.tabIndex = 0;
+        el.setAttribute("role", "region");
+        el.setAttribute("aria-label", el.getAttribute("data-scroll-label"));
+      } else {
+        el.removeAttribute("tabindex");
+        el.removeAttribute("role");
+        el.removeAttribute("aria-label");
+      }
+    });
+  };
+  syncScrollers();
+  window.addEventListener("resize", syncScrollers);
+
+  /* Chat demo: the whole conversation shows at rest; Play runs it once as a sequence */
+  if (reduce) return;
+  $$("[data-demo]").forEach(function (demo) {
+    var toggle = $("[data-demo-toggle]", demo);
+    var order;
+    try { order = JSON.parse(demo.getAttribute("data-sequence")); } catch (e) { return; }
+    if (!toggle || !order || !order.length) return;
+    var steps = $$(".demo-steps li", demo);
+    var items = {};
+    $$("[data-seq]", demo).forEach(function (el) {
+      items[el.getAttribute("data-seq")] = el;
+      if (el.classList.contains("msg-bot")) {
+        var t = document.createElement("span");
+        t.className = "typing";
+        t.setAttribute("aria-hidden", "true");
+        t.innerHTML = "<i></i><i></i><i></i>";
+        el.appendChild(t);
+      }
+    });
+    var runId = 0;
+    var wait = function (ms, id) {
+      return new Promise(function (resolve, reject) {
+        setTimeout(function () { if (id === runId) resolve(); else reject(new Error("replaced")); }, ms);
+      });
+    };
+    var setStep = function (n) {
+      steps.forEach(function (li) {
+        var s = Number(li.getAttribute("data-step"));
+        li.classList.toggle("is-active", s === n);
+        li.classList.toggle("is-done", s < n);
+      });
+    };
+    var show = function (key) { items[key].classList.remove("is-typing"); items[key].classList.add("is-shown"); };
+    var play = async function () {
+      var id = ++runId;
+      toggle.textContent = toggle.getAttribute("data-replay");
+      demo.classList.add("is-armed");
+      Object.keys(items).forEach(function (k) { items[k].classList.remove("is-shown", "is-typing"); });
+      try {
+        var current = 0;
+        for (var i = 0; i < order.length; i++) {
+          var o = order[i];
+          if (!items[o.k]) continue;
+          if (o.s !== current) {
+            if (current) await wait(700, id);
+            current = o.s;
+            setStep(current);
+            await wait(350, id);
+          }
+          if (o.t === "bot") {
+            items[o.k].classList.add("is-typing");
+            await wait(900, id);
+            show(o.k);
+          } else {
+            show(o.k);
+            await wait(o.t === "user" ? 500 : 300, id);
+          }
+        }
+        await wait(600, id);
+        setStep(steps.length + 1);
+      } catch (err) { /* a newer run replaced this one */ }
+    };
+    toggle.hidden = false;
+    toggle.addEventListener("click", play);
+  });
+})();
+</script>
+</body>
+</html>
