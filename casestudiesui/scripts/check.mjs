@@ -205,7 +205,7 @@ async function main() {
     const record = (name, problems) => results.push({ name, problems });
     const html = readFileSync(file, "utf8");
     const hasDark = /prefers-color-scheme:\s*dark/.test(html);
-    const hasChat = /data-demo\b/.test(html);
+    const hasChat = /<[^>]*\sdata-demo[\s>]/.test(html);
 
     async function open(name, options) {
       const context = await browser.newContext({ viewport: { width: options.width, height: options.height || 900 }, ...options.context });
@@ -295,6 +295,8 @@ async function main() {
       if (play) problems.push("the chat Play button shows with reduced motion");
       const contrast = await page.evaluate(contrastFailures);
       problems.push(...contrast.map((c) => `contrast: ${c}`));
+      // Scroll through only now, after the no-scroll checks, so lazy images load before the screenshot.
+      await settle(page);
       const path = join(outDir, `${name}.png`);
       await page.screenshot({ path, fullPage: true });
       shots.push(path);
